@@ -1,1 +1,2 @@
-npm install mysql2
+npm install mysql
+npm i express
