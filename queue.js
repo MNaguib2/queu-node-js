@@ -88,13 +88,13 @@ class TaskQueue {
       status = true;
       return;
     } catch (error) {
-      await connection.rollback();
+      // await connection.rollback();
       this.updateError(error, task, connection);
       console.error("Error processing task:", error);
       status = true;
       return;
     } finally {
-      connection.release();
+      // connection.release();
       return status;
     }
   }
