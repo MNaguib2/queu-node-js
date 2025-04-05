@@ -35,7 +35,6 @@ class TaskQueue {
     let list_queue = true;
     while (list_queue) {
       list_queue = await this.processQueue();
-      console.log("🚀 ~ TaskQueue ~ startQueueProcessing ~ list_queue:", list_queue)
       // Wait for a short time before checking the queue again
       // await new Promise(resolve => setTimeout(resolve, 1000));
     }
@@ -55,11 +54,11 @@ class TaskQueue {
       if (rows.length === 0) {
         console.log("📭 No pending tasks");
         this.processDbQueue = false;
+        console.log("🚀 ~ TaskQueue ~ processQueue ~ task:", task)
         return false; // 🟡 Nothing to process
       }
   
       task = rows[0];
-      console.log("Processing task:", task.task);
   
       await connection.query("UPDATE queue SET status = ? WHERE id = ?", [
         "processing",

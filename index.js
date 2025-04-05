@@ -13,4 +13,6 @@ app.post('/api/add-new-user', (req, res) => {
 
 app.listen(3000, () => {
     console.log('listening on port 3000 \nhttp://localhost:3000\n');
+    queue.startQueueProcessing();
+    console.log('Queue processing started...');
 })
