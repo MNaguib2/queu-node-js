@@ -54,7 +54,6 @@ class TaskQueue {
       if (rows.length === 0) {
         console.log("📭 No pending tasks");
         this.processDbQueue = false;
-        console.log("🚀 ~ TaskQueue ~ processQueue ~ task:", task)
         return false; // 🟡 Nothing to process
       }
   
