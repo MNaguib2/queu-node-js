@@ -69,11 +69,20 @@ class TaskQueue {
       if (task.task === "Task 2") {
         throw new Error("Task 2 failed");
       }
+
+        // Insert the completed task into the `completed` table
+        await connection.query(
+          "INSERT INTO completed (task, req_data, created_at) VALUES (?, ?, ?)",
+          [task.task, (JSON.stringify(task.req_data) || "{}"), task.created_at]
+       );
   
-      await connection.query("UPDATE queue SET status = ? WHERE id = ?", [
-        "completed",
-        task.id,
-      ]);
+      // await connection.query("UPDATE queue SET status = ? WHERE id = ?", [
+      //   "completed",
+      //   task.id,
+      // ]);
+
+      // Remove the task from the `queue` table
+      await connection.query("DELETE FROM queue WHERE id = ?", [task.id]);
   
       console.log("✅ Task completed:", task.task);
       return true;
