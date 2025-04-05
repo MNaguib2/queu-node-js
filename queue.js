@@ -35,69 +35,60 @@ class TaskQueue {
     let list_queue = true;
     while (list_queue) {
       list_queue = await this.processQueue();
+      console.log("🚀 ~ TaskQueue ~ startQueueProcessing ~ list_queue:", list_queue)
       // Wait for a short time before checking the queue again
       // await new Promise(resolve => setTimeout(resolve, 1000));
     }
   }
   async processQueue() {
     const connection = await pool.getConnection();
-    let status = false;
     let task;
     this.processDbQueue = true;
+  
     try {
-      // Start a transaction
-    //   await connection.beginTransaction();
-
-      // Lock the first pending task
+      // const [rows] = await connection.beginTransaction();
       const [rows] = await connection.query(
-        "SELECT * FROM queue WHERE status = ? ORDER BY created_at ASC LIMIT 1 FOR UPDATE",
-        ["pending"]
+        "SELECT * FROM queue WHERE status IN (?, ?) ORDER BY created_at ASC LIMIT 1 FOR UPDATE",
+        ["pending", "processing"]
       );
+  
       if (rows.length === 0) {
-        console.log("No pending tasks");
-        // await connection.commit();
+        console.log("📭 No pending tasks");
         this.processDbQueue = false;
-        return;
+        return false; // 🟡 Nothing to process
       }
-
+  
       task = rows[0];
       console.log("Processing task:", task.task);
-
-      // Mark the task as processing
+  
       await connection.query("UPDATE queue SET status = ? WHERE id = ?", [
         "processing",
         task.id,
       ]);
-
-      // Simulate task processing
+  
       await new Promise((resolve) => setTimeout(resolve, 6000));
-
+  
       if (task.task === "Task 2") {
         throw new Error("Task 2 failed");
       }
-
-      // Mark the task as completed
+  
       await connection.query("UPDATE queue SET status = ? WHERE id = ?", [
         "completed",
         task.id,
       ]);
-
-      // Commit the transaction
-    //   await connection.commit();
-      console.log("Task completed:", task.task);
-      status = true;
-      return;
+  
+      console.log("✅ Task completed:", task.task);
+      return true;
+  
     } catch (error) {
-      // await connection.rollback();
-      this.updateError(error, task, connection);
-      console.error("Error processing task:", error);
-      status = true;
-      return;
+      await this.updateError(error, task, connection);
+      console.error("❌ Error processing task:", error);
+      return true; // Still return true so processing continues
     } finally {
-      // connection.release();
-      return status;
+      connection.release(); // ✅ just cleanup, no return here
     }
   }
+  
   updateError(error, task, connection) {
     return new Promise(async (res, rej) => {
       try {
